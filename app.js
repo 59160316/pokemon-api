@@ -1,6 +1,5 @@
 const express = require('express')
 const app = express()
-const port = 3000
 
 app.use(express.json()) //for express use json format
 
@@ -9,6 +8,7 @@ class Pokemon {
         this.name = name
         this.type = type
         this.id = null
+        this.type2 = null
     }
 }
 
@@ -36,7 +36,7 @@ let pokemons = []
 pokemons.push(createPokemon('Kirlia', 'Psychic'))
 pokemons.push(createPokemon('Ralts', 'Psychic'))
 
-app.get('/', (req, res) => res.send('Hello World'))
+app.get('/', (req, res) => res.send({ message: 'Hello world'}))
 
 app.get('/pokemons', (req, res) => res.send(pokemons))
 
@@ -52,8 +52,17 @@ app.post('/pokemons', (req, res) => {
 })
 
 app.get('/pokemons/:id', (req, res) => {
+    if (!isSufficientParam(req.params.id)) {
+        res.status(400).send({ error: 'Insufficient parameters: id are required parameter' })
+        return
+    }
+
     let id = req.params.id
     let p = pokemons[id - 1]
+    if (p === undefined) {
+        res.status(400).send({ error: 'The pokemon could not be found' })
+        return
+    }
     res.send(p)
 })
 
@@ -95,5 +104,5 @@ app.delete('/pokemons/:id', (req, res) => {
     res.sendStatus(204)
 })
 
+module.exports = app
 
-app.listen(port, () => console.log(`Example app listening on port ${port}`))
