@@ -27,6 +27,10 @@ function isSufficientParam(v) {
     return v !== undefined && v !== '' && v !== null
 }
 
+function isPokemonExitsted(id) {
+    return pokemons[id - 1] !== undefined && pokemons[id - 1] !== null
+}
+
 let pokemons = []
 
 pokemons.push(createPokemon('Kirlia', 'Psychic'))
@@ -74,6 +78,21 @@ app.put('/pokemons/:id', (req, res) => {
     p.type2 = req.body.type2
     pokemons[id - 1] = p //make sure for save stage in Update Pokemon
     res.sendStatus(200)
+})
+
+app.delete('/pokemons/:id', (req, res) => {
+    if (!isSufficientParam(req.params.id)) {
+        res.status(400).send({ error: 'Insufficient parameters: id are required parameter' })
+        return
+    }
+    let id = req.params.id
+    if (!isPokemonExitsted(id)) {
+        res.status(400).send({ error: 'Cannot delete pokemon: Pokemon is not found' })
+        return
+    }
+
+    delete pokemons[id - 1]
+    res.sendStatus(204)
 })
 
 
