@@ -4,24 +4,24 @@ const chai = require('chai')
 const app = require('../app')
 chai.should()
 
-describe('Pokemon API',() =>{
+describe('Pokemon API', () => {
 
-    describe('GET /',() =>{
-        it('should return 200 ok with "Hello world"',(done) => {
+    describe('GET /', () => {
+        it('should return 200 ok with "Hello world"', (done) => {
             request(app).get('/')
                 .expect(200)
-                .end((err,res) => {
+                .end((err, res) => {
                     res.body.should.deep.equal({ message: 'Hello world' })
                     done()
                 })
         })
     })
 
-    describe('GET /pokemons/:id', () => {
-        it('should return 200 ok with a pokemon',(done) =>{
-            request(app).get('/pokemons/1')
+    describe('GET /pokemon/:id', () => {
+        it('should return 200 ok with a pokemon', (done) => {
+            request(app).get('/pokemon/1')
                 .expect(200)
-                .end((err,res) => {
+                .end((err, res) => {
                     res.body.should.to.be.an('object')
                     res.body.should.to.have.property('id')
                     res.body.should.to.have.property('name')
@@ -30,20 +30,20 @@ describe('Pokemon API',() =>{
                 })
         })
 
-        it('should return 400 Bad Request', (done) =>{
-            request(app).get('/pokemons/100')
+        it('should return 400 Bad Request', (done) => {
+            request(app).get('/pokemon/100')
                 .expect(400)
-                .end((err,res) => {
+                .end((err, res) => {
                     res.body.error.should.equal('The pokemon could not be found')
                     done()
                 })
         })
     })
 
-    describe('POST /pokemons', () =>{
+    describe('POST /pokemons', () => {
         it('should return 201 Create and have new pokemon', (done) => {
             request(app).post('/pokemons')
-                .send({name:'Pogba' , type:'football'})
+                .send({ name: 'Pogba', type: 'football' })
                 .set('Accept', 'application/json')
                 .expect(201, done)
         })
@@ -51,31 +51,31 @@ describe('Pokemon API',() =>{
         it('should return 400 Bad Request when missed field', (done) => {
             request(app).post('/pokemons')
                 .expect(400)
-                .end((err,res) => {
+                .end((err, res) => {
                     res.body.error.should.equal('Insufficient parameters: name and type are required parameter')
                     done()
                 })
         })
     })
 
-    describe('PUT /pokemons/:id', () => {
+    describe('PUT /pokemon/:id', () => {
         it('should return 200 OK and the pokemon has type2', (done) => {
-            request(app).put('/pokemons/1')
-            .send({type2:'bug'})
-            .set('Accept', 'application/json')
-            .expect(200, done)
+            request(app).put('/pokemon/1')
+                .send({ type2: 'bug' })
+                .set('Accept', 'application/json')
+                .expect(200, done)
         })
 
 
         it('should return 400 Bad Request when try to update not existed pokemon', (done) => {
-            request(app).put('/pokemons/111')
-            .send({type2:'bug'})
-            .set('Accept', 'application/json')
-            .expect(400)
-            .end((err,res) => {
-                res.body.error.should.equal('Cannot update pokemon: Pokemon is not found')
-                done()
-            })
+            request(app).put('/pokemon/111')
+                .send({ type2: 'bug' })
+                .set('Accept', 'application/json')
+                .expect(400)
+                .end((err, res) => {
+                    res.body.error.should.equal('Cannot update pokemon: Pokemon is not found')
+                    done()
+                })
         })
     })
 
@@ -84,10 +84,10 @@ describe('Pokemon API',() =>{
 describe('Integration Test', () => {
     it('GET /pokemons should return list of pokemons', (done) => {
         request('http://localhost:3000').get('/pokemons')
-        .expect(200)
-        .end((err,res) => {
-            res.body.should.be.a('array')
-            done()
-        })
+            .expect(200)
+            .end((err, res) => {
+                res.body.should.be.a('array')
+                done()
+            })
     })
 })
