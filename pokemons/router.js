@@ -8,7 +8,15 @@ function isSufficientParam(v) {
 }
 
 
-router.get('/pokemons', (req, res) => res.send(pokemon.getPokemons()))
+router.get('/pokemons', (req, res) =>{
+
+    pokemon.getPokemons().then((result) =>{
+        res.send(result)
+    }).catch((err) => {
+        console.error(err)
+        res.status(400).send({ error: 'Can not get pokemons' })
+    })
+})
 
 router.post('/pokemons', (req, res) => {
     if (!isSufficientParam(req.body.name) || !isSufficientParam(req.body.type)) {
@@ -16,11 +24,12 @@ router.post('/pokemons', (req, res) => {
         return //return for make sure is end API stage in this case
     }
 
-    let success = pokemon.savePokemon(req.body.name, req.body.type)
-    if (!success) {
+    pokemon.savePokemon(req.body.name, req.body.type).then((result) => {
+        res.sendStatus(201)
+    }).catch((err) => {
+        console.error(err)
         res.status(400).send({ error: 'Create pokemon is unsuccessfully: invalid parameters' })
-    }
-    res.sendStatus(201)
+    })
 })
 
 router.get('/pokemon/:id', (req, res) => {
@@ -30,15 +39,20 @@ router.get('/pokemon/:id', (req, res) => {
     }
 
     let id = req.params.id
-    if (!pokemon.isPokemonExitsted(id)) {
-        res.status(400).send({ error: 'The pokemon could not be found' })
-        return
-    }
+    // if (!pokemon.isPokemonExitsted(id)) {
+    //     res.status(400).send({ error: 'The pokemon could not be found' })
+    //     return
+    // }
 
-    res.send(pokemon.getPokemon(id))
+    pokemon.getPokemon(id).then((result) =>{
+        res.send(result)
+    }).catch((err) => {
+        console.error(err)
+        res.status(400).send({ error: 'Can not get pokemons' })
+    })
 })
 
-router.put('/pokemon/:id', (req, res) => {
+router.put('/pokemon/:id', async (req, res) => {
     if (!isSufficientParam(req.body.type2)) {
         res.status(400).send({ error: 'Insufficient parameters: type2 are required parameter' })
         return
@@ -49,22 +63,34 @@ router.put('/pokemon/:id', (req, res) => {
         return
     }
 
+    // if (!pokemon.isPokemonExitsted(id)) {
+    //     res.status(400).send({ error: 'Cannot update pokemon: Pokemon is not found' })
+    //     return
+    // }
+
+    // let p = pokemon.getPokemon(id)
+    // p.type2 = req.body.type2
+
+    // let success = pokemon.update(id,type2)
+
+    // if (!success) {
+    //     res.status(400).send({ error: 'Update type2 is unsuccessfully' })
+    // }
+    // res.sendStatus(200)
+
     let id = req.params.id
 
-    if (!pokemon.isPokemonExitsted(id)) {
-        res.status(400).send({ error: 'Cannot update pokemon: Pokemon is not found' })
-        return
-    }
-
-    let p = pokemon.getPokemon(id)
+    let p = await pokemon.getPokemon(id)
 
     p.type2 = req.body.type2
-    let success = pokemon.update(p)
 
-    if (!success) {
+
+    pokemon.update(p).then((result) => {
+        res.sendStatus(200)
+    }).catch((err) => {
+        console.error(err)
         res.status(400).send({ error: 'Update type2 is unsuccessfully' })
-    }
-    res.sendStatus(200)
+    })
 })
 
 router.delete('/pokemon/:id', (req, res) => {

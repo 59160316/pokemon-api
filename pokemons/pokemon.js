@@ -1,3 +1,10 @@
+const mongoClient = require('mongodb').MongoClient
+const ObjectID = require('mongodb').ObjectID
+
+const DB_URL = 'mongodb+srv://59160316:a0147258369@cluster0-lypzl.gcp.mongodb.net/admin?retryWrites=true&w=majority'
+const DB_NAME = 'example'
+const options = {useNewUrlParser: true , useUnifiedTopology: true}
+
 let pokemons = []
 
 class Pokemon {
@@ -7,6 +14,20 @@ class Pokemon {
         this.id = null
         this.type2 = null
     }
+}
+
+async function connectDatabase(){
+
+    client = await mongoClient.connect(DB_URL,options).catch(err => console.error(err))
+
+    return client
+}
+
+async function getCollection(name){
+    var client = await connectDatabase().catch(err => console.error(err))
+    database = client.db(DB_NAME)
+    collection = database.collection(name)
+    return collection
 }
 
 function mockPokemon() {
@@ -19,10 +40,37 @@ function generateNewId(num) {
     return newId
 }
 
-function savePokemon(name, type) {
+async function getPokemons() {
+
+    var collection = await getCollection('pokemons')
+
+    try{
+        var result = await collection.find({}).toArray()
+        return result
+    }catch(err){
+        console.error(err)
+        return null
+    }finally{
+        client.close()
+    }
+}
+
+
+
+async function savePokemon(name, type) {
     let p = createPokemon(name, type)
-    pokemons.push(p)
-    return true
+
+    var collection = await getCollection('pokemons')
+    try{
+        var result = await collection.insert(p)
+        return true
+    }catch(err){
+        console.error(err)
+        return false
+    }finally{
+        client.close()
+    }
+
 }
 
 function createPokemon(name, type) {
@@ -35,18 +83,34 @@ function isPokemonExitsted(id) {
     return pokemons[id - 1] !== undefined && pokemons[id - 1] !== null
 }
 
-function getPokemons() {
-    return pokemons
+
+async function getPokemon(id) {
+    var collection = await getCollection('pokemons')
+
+    try{
+        var result = await collection.findOne({_id: ObjectID(id)})
+        return result
+    }catch(err){
+        console.error(err)
+        return null
+    }finally{
+        client.close()
+    }
 }
 
-function getPokemon(id) {
-    let p = pokemons[id - 1]
-    return p
-}
+async function update(pokemon) {
+    var collection = await getCollection('pokemons')
 
-function update(pokemon) {
-    pokemons[pokemon.id - 1] = pokemon
-    return true
+    try{
+        var result = await collection.updateOne({_id: ObjectID(pokemon._id)}, { $set:{ type2: pokemon.type2 } })
+        return true
+    }catch(err){
+        console.error(err)
+        return false
+    }finally{
+        client.close()
+    }
+
 }
 
 mockPokemon()
